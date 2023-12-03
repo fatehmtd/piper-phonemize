@@ -22,7 +22,7 @@ elseif(NOT APPLE)
 endif()
 
 add_library(
-    piper_phonemize SHARED
+    piper_phonemize STATIC
     src/phonemize.cpp
     src/phoneme_ids.cpp
     src/tashkeel.cpp
@@ -127,19 +127,19 @@ target_include_directories(
     piper_phonemize PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"
     ${ESPEAK_NG_DIR}/include
-    ${ONNXRUNTIME_DIR}/include
+    #${ONNXRUNTIME_DIR}/include
 )
 
 target_link_directories(
     piper_phonemize PUBLIC
     ${ESPEAK_NG_DIR}/lib
-    ${ONNXRUNTIME_DIR}/lib
+    #${ONNXRUNTIME_DIR}/lib
 )
 
 target_link_libraries(
     piper_phonemize
     espeak-ng
-    onnxruntime
+    #onnxruntime
 )
 
 target_compile_features(piper_phonemize PUBLIC cxx_std_17)

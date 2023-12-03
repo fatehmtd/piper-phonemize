@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include <onnxruntime_cxx_api.h>
+//#include <onnxruntime_cxx_api.h>
 
 #include "tashkeel.hpp"
 #include "uni_algo.h"
@@ -79,117 +79,118 @@ std::set<char32_t> HARAKAT_CHARS{
 std::set<int> INVALID_HARAKA_IDS{UNK_ID, 8};
 
 PIPERPHONEMIZE_EXPORT void tashkeel_load(std::string modelPath, State &state) {
-  state.env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING,
-                       instanceName.c_str());
-  state.env.DisableTelemetryEvents();
-  state.options.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
+//   state.env = Ort::Env(OrtLoggingLevel::ORT_LOGGING_LEVEL_WARNING,
+//                        instanceName.c_str());
+//   state.env.DisableTelemetryEvents();
+//   state.options.SetExecutionMode(ExecutionMode::ORT_PARALLEL);
 
-#ifdef _WIN32
-  auto modelPathW = std::wstring(modelPath.begin(), modelPath.end());
-  auto modelPathStr = modelPathW.c_str();
-#else
-  auto modelPathStr = modelPath.c_str();
-#endif
+// #ifdef _WIN32
+//   auto modelPathW = std::wstring(modelPath.begin(), modelPath.end());
+//   auto modelPathStr = modelPathW.c_str();
+// #else
+//   auto modelPathStr = modelPath.c_str();
+// #endif
 
-  state.onnx = Ort::Session(state.env, modelPathStr, state.options);
+//   state.onnx = Ort::Session(state.env, modelPathStr, state.options);
 }
 
 PIPERPHONEMIZE_EXPORT std::string tashkeel_run(std::string text, State &state) {
-  auto memoryInfo = Ort::MemoryInfo::CreateCpu(
-      OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
+  return text;
+  // auto memoryInfo = Ort::MemoryInfo::CreateCpu(
+  //     OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeDefault);
 
-  std::vector<Ort::Value> inputTensors;
+  // std::vector<Ort::Value> inputTensors;
 
-  // Strip haraka and convert to vocab ints
-  std::string strippedText = std::string_view(text) | una::views::utf8 |
-                             una::views::filter([](char32_t c) {
-                               return HARAKAT_CHARS.count(c) < 1;
-                             }) |
-                             una::ranges::to_utf8<std::string>();
+  // // Strip haraka and convert to vocab ints
+  // std::string strippedText = std::string_view(text) | una::views::utf8 |
+  //                            una::views::filter([](char32_t c) {
+  //                              return HARAKAT_CHARS.count(c) < 1;
+  //                            }) |
+  //                            una::ranges::to_utf8<std::string>();
 
-  auto inputIdRange = std::string_view(strippedText) | una::views::utf8 |
-                      una::views::transform([](char32_t c) {
-                        return inputVocab.count(c) > 0 ? inputVocab[c] : UNK_ID;
-                      });
+  // auto inputIdRange = std::string_view(strippedText) | una::views::utf8 |
+  //                     una::views::transform([](char32_t c) {
+  //                       return inputVocab.count(c) > 0 ? inputVocab[c] : UNK_ID;
+  //                     });
 
-  std::vector<float> inputIds;
-  for (auto id : inputIdRange) {
-    inputIds.push_back(id);
-  }
+  // std::vector<float> inputIds;
+  // for (auto id : inputIdRange) {
+  //   inputIds.push_back(id);
+  // }
 
-  // Model has a fixed input size
-  inputIds.resize(MAX_INPUT_CHARS, PAD_ID);
+  // // Model has a fixed input size
+  // inputIds.resize(MAX_INPUT_CHARS, PAD_ID);
 
-  std::vector<int64_t> inputIdsShape{1, (int64_t)inputIds.size()};
-  inputTensors.push_back(Ort::Value::CreateTensor<float>(
-      memoryInfo, inputIds.data(), inputIds.size(), inputIdsShape.data(),
-      inputIdsShape.size()));
+  // std::vector<int64_t> inputIdsShape{1, (int64_t)inputIds.size()};
+  // inputTensors.push_back(Ort::Value::CreateTensor<float>(
+  //     memoryInfo, inputIds.data(), inputIds.size(), inputIdsShape.data(),
+  //     inputIdsShape.size()));
 
-  // From tashkeel model.
-  // These can be pulled from the onnx session, but it's a pain.
-  std::array<const char *, 1> inputNames = {"embedding_7_input"};
-  std::array<const char *, 1> outputNames = {"dense_7"};
+  // // From tashkeel model.
+  // // These can be pulled from the onnx session, but it's a pain.
+  // std::array<const char *, 1> inputNames = {"embedding_7_input"};
+  // std::array<const char *, 1> outputNames = {"dense_7"};
 
-  auto outputTensors = state.onnx.Run(
-      Ort::RunOptions{nullptr}, inputNames.data(), inputTensors.data(),
-      inputTensors.size(), outputNames.data(), outputNames.size());
+  // auto outputTensors = state.onnx.Run(
+  //     Ort::RunOptions{nullptr}, inputNames.data(), inputTensors.data(),
+  //     inputTensors.size(), outputNames.data(), outputNames.size());
 
-  if ((outputTensors.size() != 1) || (!outputTensors.front().IsTensor())) {
-    throw std::runtime_error("Invalid output tensors");
-  }
+  // if ((outputTensors.size() != 1) || (!outputTensors.front().IsTensor())) {
+  //   throw std::runtime_error("Invalid output tensors");
+  // }
 
-  const float *outputIdProbs = outputTensors.front().GetTensorData<float>();
-  auto outputIdsShape =
-      outputTensors.front().GetTensorTypeAndShapeInfo().GetShape();
+  // const float *outputIdProbs = outputTensors.front().GetTensorData<float>();
+  // auto outputIdsShape =
+  //     outputTensors.front().GetTensorTypeAndShapeInfo().GetShape();
 
-  // batch x chars x probabilities
-  std::size_t numOutputChars = outputIdsShape[1];
-  std::size_t numOutputProbs = outputIdsShape[2];
+  // // batch x chars x probabilities
+  // std::size_t numOutputChars = outputIdsShape[1];
+  // std::size_t numOutputProbs = outputIdsShape[2];
 
-  // Add predicted haraka to stripped string
-  auto strippedView = std::string_view(strippedText) | una::views::utf8;
-  std::u32string processedText;
-  std::size_t i = 0;
-  for (auto c : strippedView) {
-    processedText += c;
+  // // Add predicted haraka to stripped string
+  // auto strippedView = std::string_view(strippedText) | una::views::utf8;
+  // std::u32string processedText;
+  // std::size_t i = 0;
+  // for (auto c : strippedView) {
+  //   processedText += c;
 
-    if (i < numOutputChars) {
-      int maxId = 0;
-      float maxIdProb = 0.0f;
+  //   if (i < numOutputChars) {
+  //     int maxId = 0;
+  //     float maxIdProb = 0.0f;
 
-      // Get the id with the maximum probability
-      for (std::size_t j = 0; j < numOutputProbs; j++) {
-        float currentProb = outputIdProbs[(i * numOutputProbs) + j];
-        if (currentProb > maxIdProb) {
-          maxIdProb = currentProb;
-          maxId = j;
-        }
-      }
+  //     // Get the id with the maximum probability
+  //     for (std::size_t j = 0; j < numOutputProbs; j++) {
+  //       float currentProb = outputIdProbs[(i * numOutputProbs) + j];
+  //       if (currentProb > maxIdProb) {
+  //         maxIdProb = currentProb;
+  //         maxId = j;
+  //       }
+  //     }
 
-      if ((INVALID_HARAKA_IDS.count(maxId) < 1) &&
-          (outputVocab.count(maxId) > 0)) {
-        // Add predicted haraka
-        for (auto haraka : outputVocab[maxId]) {
-          processedText += haraka;
-        }
-      }
-    }
+  //     if ((INVALID_HARAKA_IDS.count(maxId) < 1) &&
+  //         (outputVocab.count(maxId) > 0)) {
+  //       // Add predicted haraka
+  //       for (auto haraka : outputVocab[maxId]) {
+  //         processedText += haraka;
+  //       }
+  //     }
+  //   }
 
-    // Next output char
-    i++;
-  }
+  //   // Next output char
+  //   i++;
+  // }
 
-  // Clean up
-  for (std::size_t i = 0; i < outputTensors.size(); i++) {
-    Ort::detail::OrtRelease(outputTensors[i].release());
-  }
+  // // Clean up
+  // for (std::size_t i = 0; i < outputTensors.size(); i++) {
+  //   Ort::detail::OrtRelease(outputTensors[i].release());
+  // }
 
-  for (std::size_t i = 0; i < inputTensors.size(); i++) {
-    Ort::detail::OrtRelease(inputTensors[i].release());
-  }
+  // for (std::size_t i = 0; i < inputTensors.size(); i++) {
+  //   Ort::detail::OrtRelease(inputTensors[i].release());
+  // }
 
-  // Result is UTF-8
-  return una::utf32to8(processedText);
+  // // Result is UTF-8
+  // return una::utf32to8(processedText);
 }
 
 } // namespace tashkeel

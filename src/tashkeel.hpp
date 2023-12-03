@@ -5,7 +5,7 @@
 #include <set>
 #include <string>
 
-#include <onnxruntime_cxx_api.h>
+//#include <onnxruntime_cxx_api.h>
 
 #include "shared.hpp"
 
@@ -23,12 +23,12 @@ extern std::map<char32_t, int> inputVocab;
 extern std::map<int, std::vector<char32_t>> outputVocab;
 
 struct State {
-  Ort::Session onnx;
-  Ort::AllocatorWithDefaultOptions allocator;
-  Ort::SessionOptions options;
-  Ort::Env env;
+  // Ort::Session onnx;
+  // Ort::AllocatorWithDefaultOptions allocator;
+  // Ort::SessionOptions options;
+  // Ort::Env env;
 
-  State() : onnx(nullptr){};
+  // State() : onnx(nullptr){};
 };
 
 PIPERPHONEMIZE_EXPORT void tashkeel_load(std::string modelPath, State &state);
